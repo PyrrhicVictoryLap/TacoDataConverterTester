@@ -1,0 +1,12 @@
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\bin\Debug\net5.0\Taco.DataConverter.Models.deps.json
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\bin\Debug\net5.0\Taco.DataConverter.Models.dll
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\bin\Debug\net5.0\ref\Taco.DataConverter.Models.dll
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\bin\Debug\net5.0\Taco.DataConverter.Models.pdb
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.csproj.AssemblyReference.cache
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.AssemblyInfoInputs.cache
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.AssemblyInfo.cs
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.csproj.CoreCompileInputs.cache
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.dll
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\ref\Taco.DataConverter.Models.dll
+C:\Users\i812654\Documents\GitHub\Taco.DataConverter\src\Taco.DataConverter.Models\obj\Debug\net5.0\Taco.DataConverter.Models.pdb

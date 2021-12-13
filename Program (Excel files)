@@ -1,0 +1,536 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.Data.SqlClient;
+using System.Net.Http;
+using System.Text;
+
+namespace ExcelConversionTest
+{
+    class Program
+    {
+        private static DataTable dtDataCategories;
+        private static DataTable dtTests;
+        private static DataTable dtHeaders;
+        private static DataTable dtTestData;
+        private static DataTable dtTestCases;
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+            // Connect EXCEL sheet with OLEDB using connection string
+            // if the File extension is .XLS using below connection string
+            //In following sample 'szFilePath' is the variable for filePath
+
+            OleDbConnection connection;
+            OleDbCommand command;
+            OleDbDataReader dr;
+            DataTable dtResult;
+            DataRow myDataRow;
+
+
+            string filename = "C:\\Users\\i812654\\Documents\\CT Auto.xlsx";
+             
+            string commandText = "SELECT * FROM [Main$]";
+            string connectionString = "Provider=Microsoft.ACE.OLEDB.12.0;" +
+            @"Data Source=" + filename + ";" +
+            "Extended Properties=\"Excel 12.0;HDR=YES\";";
+
+            string dbConnectionString = "Data Source=NPS-SQL-QA01-DEV;Initial Catalog=AutomatedTestData;Integrated Security=SSPI;";
+
+            InitializeTables();
+
+            // Connect EXCEL sheet with OLEDB using connection string
+            using (OleDbConnection conn = new OleDbConnection(connectionString))
+            {
+                //////////////Get excel sheet names//////////////////////////////
+                conn.Open();
+                dtResult = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+
+                if (dtResult == null)
+                {
+                    Console.ReadLine();
+                }
+
+                String[] excelSheets = new String[dtResult.Rows.Count];
+                int i = 0;
+
+                // Add the sheet name to the string array.
+                foreach (DataRow row in dtResult.Rows)
+                {
+                    excelSheets[i] = row["TABLE_NAME"].ToString();
+                    myDataRow = dtDataCategories.NewRow();
+                    myDataRow["DataCategoryName"] = excelSheets[i];
+                    myDataRow["DataCategoryIndex"] = 1;
+                    dtDataCategories.Rows.Add(myDataRow);
+                    i++;
+                }
+
+                //////////////Loop through sheets for data///////////////
+
+                //Set Test data
+               
+                commandText = "SELECT Matrix FROM [MatrixInfo$]";
+                OleDbDataAdapter objDA = new System.Data.OleDb.OleDbDataAdapter(commandText, conn);
+                DataSet excelDataSet = new DataSet();
+                objDA.Fill(excelDataSet);
+                dtResult = excelDataSet.Tables[0];
+
+                FillTestCases(dtResult);
+
+                commandText = "SELECT * FROM [Quote Main$]";
+                objDA = new System.Data.OleDb.OleDbDataAdapter(commandText, conn);
+                excelDataSet = new DataSet();
+                objDA.Fill(excelDataSet);
+                dtResult = excelDataSet.Tables[0];
+
+                FillTests(dtResult);
+
+                // Loop through all of the sheets
+                for (int j = 0; j < excelSheets.Length; j++)
+                {
+                    commandText = "SELECT * FROM [" + excelSheets[j] + "]";
+                    objDA = new System.Data.OleDb.OleDbDataAdapter(commandText, conn);
+                    excelDataSet = new DataSet();
+                    objDA.Fill(excelDataSet);
+                    dtResult = excelDataSet.Tables[0];
+
+                    FillHeaders(dtResult, excelSheets[j]);
+                    FillTestsData(dtResult, excelSheets[j]);
+                }
+
+                //OleDbDataAdapter objDA = new System.Data.OleDb.OleDbDataAdapter(commandText, conn);
+                //DataSet excelDataSet = new DataSet();
+                //objDA.Fill(excelDataSet);
+                //dtResult = excelDataSet.Tables[0];
+
+                //string apiUrl = $"https://devintqa.nationalgeneral.com/TacoData/v1/testcases";
+
+                //Object obj = new object();
+                ////string strJsonData = @"{'AppId': '4', 'TestCaseName': '" +  + "', 'Notes': 'Sending data to API', 'CreatedBy': 'DataConverter'}";
+                //using (var client = new HttpClient())
+                //{
+                //    var response = client.PostAsync(apiUrl, new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json"));
+                //}
+
+                    //string apiUrl = $"https://devintqa.nationalgeneral.com/TacoData/v1/testcases";
+                    //var client = new HttpClient();
+                    //var values = new Dictionary<string, string>()
+                    //{
+                    //    {"AppId", "4"},
+                    //    {"TestCaseName", dtTestCases.Rows[0]["TestCasesName"].ToString() },
+                    //    {"Notes", "Sending data to API"},
+                    //    {"CreatedBy", "DataConverter"},
+                    //};
+                    //var content = new FormUrlEncodedContent(values);
+
+                    //var response = await client.PostAsync(apiUrl, content);
+                    //response.EnsureSuccessStatusCode();
+
+                    Console.ReadLine(); 
+            }       
+        }
+
+        private static int RowIndex(DataTable table, string columnName, string matchValue)
+        {
+            char[] charsToRemove = { '\'', ' ' };
+            matchValue = matchValue.Trim(charsToRemove);
+            DataRow[] row = table.Select(columnName + " LIKE '%" + matchValue + "%'");
+            return table.Rows.IndexOf(row[0]);
+        }
+
+        private static int RowIndexMulti(DataTable table, string[] columnNames, List<object> matchValues)
+        {
+            string query = "";
+            char[] charsToRemove = { '\'', ' ' };
+            for(int i = 0; i < matchValues.Count; i++)
+            {
+                if(i == 0)
+                {
+                    if(matchValues[i].GetType() == typeof(string))
+                    {
+                        query += columnNames[i] + " LIKE '%" + matchValues[i].ToString().Trim(charsToRemove) + "%'";
+                    }
+                    else if (matchValues[i].GetType() == typeof(int))
+                    {
+                        query += columnNames[i] + " = " + matchValues[i];
+                    }
+                    
+                }
+                else
+                {
+                    if (matchValues[i].GetType() == typeof(string))
+                    {
+                        query += " AND " + columnNames[i] + " LIKE '%" + matchValues[i].ToString().Trim(charsToRemove) + "%'";
+                    }
+                    else if (matchValues[i].GetType() == typeof(int))
+                    {
+                        query += " AND " + columnNames[i] + " = " + matchValues[i];
+                    }  
+                }
+            }
+            DataRow[] row = table.Select(query);
+            return table.Rows.IndexOf(row[0]);
+        }
+
+        private static void FillTestCases(DataTable table)
+        {
+            DataRow myDataRow;
+            myDataRow = dtTestCases.NewRow();
+            myDataRow["TestCasesName"] = table.Rows[0]["Matrix"].ToString();
+            dtTestCases.Rows.Add(myDataRow);
+        }
+
+        private static void FillTests(DataTable table)
+        {
+            DataRow myDataRow;
+            foreach (DataRow row in table.Rows)
+            {
+                myDataRow = dtTests.NewRow();
+                myDataRow["TestCasesId"] = 0;
+                myDataRow["TestName"] = row["TestCaseName"].ToString();
+                myDataRow["TestMatrixId"] = row["TestCaseID"].ToString();
+                dtTests.Rows.Add(myDataRow);
+            }
+        }
+
+        private static void FillHeaders(DataTable table, string dataCategory)
+        {
+            DataRow myDataRow;
+            foreach (DataColumn column in table.Columns)
+            {
+                myDataRow = dtHeaders.NewRow();
+                myDataRow["HeaderName"] = column.ColumnName;
+                myDataRow["DataCategoryId"] = GetDataCategoryId(dataCategory);
+                myDataRow["HeaderIndex"] = 1;
+                dtHeaders.Rows.Add(myDataRow);
+            }
+        }
+
+        private static void FillTestsData(DataTable table, string dataCategory)
+        {
+            DataRow myDataRow;
+            string testMatrixId;
+
+            
+            foreach (DataRow row in table.Rows)
+            {
+                try
+                {
+                    testMatrixId = row["TestCaseId"].ToString();
+                }
+                catch (Exception ex)
+                {
+                    return;
+                }
+
+                for (int i = 1; i < row.ItemArray.Length; i++)
+                {
+                    myDataRow = dtTestData.NewRow();
+                    myDataRow["DataValue"] = row.ItemArray[i];
+                    myDataRow["HeaderId"] = GetHeaderId(table.Columns[i].ColumnName, GetDataCategoryId(dataCategory));
+                    myDataRow["DataCategoryId"] = GetDataCategoryId(dataCategory);
+                    myDataRow["TestId"] = GetTestId(testMatrixId);
+                    dtTestData.Rows.Add(myDataRow);
+                }
+            }
+        }
+
+        private static int GetHeaderId(string headerName, int dataCategoryId)
+        {
+            string[] columnNames = { "HeaderName", "DataCategoryId" };
+            List<object> matchValues = new List<object>(){ headerName, dataCategoryId };
+            return dtHeaders.Rows[RowIndexMulti(dtHeaders, columnNames, matchValues)].Field<int>("HeaderId");
+        }
+
+        private static int GetDataCategoryId(string dataCategory)
+        {
+            return dtDataCategories.Rows[RowIndex(dtDataCategories, "DataCategoryName", dataCategory)].Field<int>("DataCategoryId");
+        }
+
+        private static int GetTestId(string testMatrixId)
+        {
+            return dtTests.Rows[RowIndex(dtTests, "TestMatrixId", testMatrixId)].Field<int>("TestId");
+        }
+
+        private static void InitializeTables()
+        {
+            dtDataCategories = new DataTable();
+            dtHeaders = new DataTable();
+            dtTestData = new DataTable();
+            dtTestCases = new DataTable();
+            dtTests = new DataTable();
+
+            //DataCategories
+            DataColumn dtColumn;
+  
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "DataCategoryId";
+            dtColumn.Caption = "Cust ID";
+            dtColumn.AutoIncrement = true;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = true;
+            // Add column to the DataColumnCollection.  
+            dtDataCategories.Columns.Add(dtColumn);
+   
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "DataCategoryName";
+            dtColumn.Caption = "Cust Name";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtDataCategories.Columns.Add(dtColumn);
+  
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "DataCategoryIndex";
+            dtColumn.Caption = "Index";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtDataCategories.Columns.Add(dtColumn);
+
+            //Headers///////////////////////////////////////////
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "HeaderId";
+            dtColumn.AutoIncrement = true;
+            dtColumn.Caption = "Cust ID";
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = true;
+            // Add column to the DataColumnCollection.  
+            dtHeaders.Columns.Add(dtColumn);
+    
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "HeaderName";
+            dtColumn.Caption = "Cust Name";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtHeaders.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "DataCategoryId";
+            dtColumn.Caption = "DC ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtHeaders.Columns.Add(dtColumn);
+            
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "HeaderIndex";
+            dtColumn.Caption = "HI";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtHeaders.Columns.Add(dtColumn);
+
+            //TestsData////////////////////////////////////////
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "TestDataId";
+            dtColumn.AutoIncrement = true;
+            dtColumn.Caption = "Cust ID";
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = true;
+            // Add column to the DataColumnCollection.  
+            dtTestData.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "HeaderId";
+            dtColumn.Caption = "H ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtTestData.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "DataValue";
+            dtColumn.Caption = "DV";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtTestData.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "DataIndex";
+            dtColumn.Caption = "DI";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtTestData.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "DataCategoryId";
+            dtColumn.Caption = "DC ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtTestData.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "TestId";
+            dtColumn.Caption = "T ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtTestData.Columns.Add(dtColumn);
+
+            //TestCases////////////////////////////////////////
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "TestCasesId";
+            dtColumn.AutoIncrement = true;
+            dtColumn.Caption = "Cust ID";
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = true;
+            // Add column to the DataColumnCollection.  
+            dtTestCases.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "TestCasesName";
+            dtColumn.Caption = "TC";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtTestCases.Columns.Add(dtColumn);
+
+            //Tests////////////////////////////////////////
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "TestId";
+            dtColumn.AutoIncrement = true;
+            dtColumn.Caption = "Test ID";
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = true;
+            // Add column to the DataColumnCollection.  
+            dtTests.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(Int32);
+            dtColumn.ColumnName = "TestCasesId";
+            dtColumn.Caption = "TC ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtTests.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "TestName";
+            dtColumn.Caption = "TN";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            // Add column to the DataColumnCollection.    
+            dtTests.Columns.Add(dtColumn);
+
+            dtColumn = new DataColumn();
+            dtColumn.DataType = typeof(String);
+            dtColumn.ColumnName = "TestMatrixId";
+            dtColumn.Caption = "TM ID";
+            dtColumn.AutoIncrement = false;
+            dtColumn.ReadOnly = false;
+            dtColumn.Unique = false;
+            /// Add column to the DataColumnCollection.  
+            dtTests.Columns.Add(dtColumn);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////
+
+//using (SqlConnection devCon = new SqlConnection(dbConnectionString))
+//{
+//    SqlBulkCopy objbulk = new SqlBulkCopy(devCon);
+//    //assigning Destination table name      
+//    objbulk.DestinationTableName = "ExcelConversionTest";
+//    //Mapping Table column    
+//    objbulk.ColumnMappings.Add("TestCaseID", "TestCaseID");
+//    objbulk.ColumnMappings.Add("State", "State");
+//    objbulk.ColumnMappings.Add("LOB", "LOB");
+
+//    //inserting Datatable Records to DataBase   
+//    //SqlConnection sqlConnection = new SqlConnection();
+//    //sqlConnection.ConnectionString = "server = VSBS01; database = dbHRVeniteck; User ID = sa; Password = veniteck@2016"; //Connection Details    
+//    devCon.Open();
+//    objbulk.WriteToServer(dtResult);
+//    devCon.Close();
+//} 
+
+/////////////////////////////////////////////////////////////////////////////////
+
+//In above code '[Sheet1$]' is the first sheet name with '$' as default selector,
+// with the help of data adaptor we can load records in dataset		
+
+////write data in EXCEL sheet (Insert data)
+//using (OleDbConnection conn = new OleDbConnection(connectionString))
+//{
+//    try
+//    {
+//        conn.Open();
+//        OleDbCommand cmd = new OleDbCommand();
+//        cmd.Connection = conn;
+//        cmd.CommandText = @"Insert into [Sheet1$] (month,mango,apple,orange) 
+//VALUES ('DEC','40','60','80');";
+//        cmd.ExecuteNonQuery();
+//    }
+//    catch (Exception ex)
+//    {
+//        //exception here
+//    }
+//    finally
+//    {
+//        conn.Close();
+//        conn.Dispose();
+//    }
+//}
+
+////update data in EXCEL sheet (update data)
+//using (OleDbConnection conn = new OleDbConnection(connectionString))
+//{
+//    try
+//    {
+//        conn.Open();
+//        OleDbCommand cmd = new OleDbCommand();
+//        cmd.Connection = conn;
+//        cmd.CommandText = "UPDATE [Sheet1$] SET month = 'DEC' WHERE apple = 74;";
+//        cmd.ExecuteNonQuery();
+//    }
+//    catch (Exception ex)
+//    {
+//        //exception here
+//    }
+//    finally
+//    {
+//        conn.Close();
+//        conn.Dispose();
+//    }
+//}
+
+//string query = string.Format("Select [TestCaseID], [State], [LOB] FROM [{0}]", "Sheet1$");

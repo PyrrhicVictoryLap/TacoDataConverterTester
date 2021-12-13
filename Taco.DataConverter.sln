@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{5F7298FA-9792-4BE4-BDA9-32F2EEDEBC7C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{7B362843-8B40-4CB2-A206-38990C2AD84C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DCE0270D-441C-4AAE-BFBE-8CD9272946A1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi", "WebApi", "{12A62D20-5853-4E58-B7D2-1113636D67F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taco.DataConverter.BusinessLogic", "src\Taco.DataConverter.BusinessLogic\Taco.DataConverter.BusinessLogic.csproj", "{7FF4A553-F2CE-483D-95A9-2B23865740B2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taco.DataConverter.Data", "src\Taco.DataConverter.Data\Taco.DataConverter.Data.csproj", "{1A391818-7D6B-441D-8C41-B128D2EB17CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taco.DataConverter.Models", "src\Taco.DataConverter.Models\Taco.DataConverter.Models.csproj", "{0F35EAB3-D03D-40B2-9282-F6E2469C2441}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taco.DataConverter.WebApi", "src\Taco.DataConverter.WebApi\Taco.DataConverter.WebApi.csproj", "{93420585-2D44-4260-B455-EC3B279DC753}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7FF4A553-F2CE-483D-95A9-2B23865740B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FF4A553-F2CE-483D-95A9-2B23865740B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FF4A553-F2CE-483D-95A9-2B23865740B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FF4A553-F2CE-483D-95A9-2B23865740B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A391818-7D6B-441D-8C41-B128D2EB17CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A391818-7D6B-441D-8C41-B128D2EB17CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A391818-7D6B-441D-8C41-B128D2EB17CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A391818-7D6B-441D-8C41-B128D2EB17CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F35EAB3-D03D-40B2-9282-F6E2469C2441}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F35EAB3-D03D-40B2-9282-F6E2469C2441}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F35EAB3-D03D-40B2-9282-F6E2469C2441}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F35EAB3-D03D-40B2-9282-F6E2469C2441}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93420585-2D44-4260-B455-EC3B279DC753}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93420585-2D44-4260-B455-EC3B279DC753}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93420585-2D44-4260-B455-EC3B279DC753}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93420585-2D44-4260-B455-EC3B279DC753}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7FF4A553-F2CE-483D-95A9-2B23865740B2} = {5F7298FA-9792-4BE4-BDA9-32F2EEDEBC7C}
+		{1A391818-7D6B-441D-8C41-B128D2EB17CB} = {5F7298FA-9792-4BE4-BDA9-32F2EEDEBC7C}
+		{0F35EAB3-D03D-40B2-9282-F6E2469C2441} = {5F7298FA-9792-4BE4-BDA9-32F2EEDEBC7C}
+		{93420585-2D44-4260-B455-EC3B279DC753} = {12A62D20-5853-4E58-B7D2-1113636D67F2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F516E603-A094-4423-88D5-25ED45F8380A}
+	EndGlobalSection
+EndGlobal
